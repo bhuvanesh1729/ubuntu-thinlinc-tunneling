@@ -62,7 +62,7 @@ setup_tunnel() {
     local source_port=$2
     local target_port=$3
     echo "Setting up SSH tunnel for $target:$target_port -> localhost:$source_port"
-    ssh -N -L "$source_port:$target:$target_port" "$target" &
+    ssh -N -L "$source_port:$target:$target_port" localhost &
     echo $! > /tmp/thinlinc-tunnel.pid
     echo "Tunnel established. You can now connect to ThinLinc using localhost:$source_port"
 }
@@ -112,6 +112,9 @@ case "$1" in
             fi
         fi
         setup_tunnel "$LAN_TARGET" "$SOURCE_PORT" "$TARGET_PORT"
+        ;;
+    "off")
+        stop_tunnel
         ;;
     *)
         echo "Usage: $0 {install|on|off}"
