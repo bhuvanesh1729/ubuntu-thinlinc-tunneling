@@ -2,6 +2,20 @@
 
 set -e
 
+# Function to install dependencies
+install_dependencies() {
+    echo "Installing required dependencies..."
+    if ! command -v nmap &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y nmap
+    fi
+    
+    if ! command -v ssh &> /dev/null; then
+        sudo apt-get install -y openssh-client
+    fi
+    echo "Dependencies installed successfully"
+}
+
 # Function to detect LAN target
 detect_lan_target() {
     # Get the default route interface
@@ -10,15 +24,15 @@ detect_lan_target() {
     # Get the network address range
     NETWORK=$(ip route | grep "$DEFAULT_INTERFACE" | grep -v default | awk '{print $1}' | head -n1)
     
-    # Scan the network for ThinLinc server (port 22)
-    echo "Scanning network for ThinLinc server..."
+    # Scan the network for systems with SSH (port 22)
+    echo "Scanning network for systems with SSH access..."
     FOUND_TARGET=$(nmap -p22 --open "$NETWORK" -n --max-retries 1 | grep "Nmap scan" | head -n1 | awk '{print $5}')
     
     if [ -n "$FOUND_TARGET" ]; then
-        echo "Found ThinLinc server at: $FOUND_TARGET"
+        echo "Found system with SSH access at: $FOUND_TARGET"
         return 0
     else
-        echo "No ThinLinc server found automatically."
+        echo "No system with SSH access found automatically."
         return 1
     fi
 }
@@ -55,13 +69,16 @@ stop_tunnel() {
 
 # Main script
 case "$1" in
+    "install")
+        install_dependencies
+        ;;
     "on")
         # Try to detect LAN target first
         if detect_lan_target; then
             LAN_TARGET=$FOUND_TARGET
         else
             # If automatic detection fails, ask for manual input
-            read -p "Enter ThinLinc server IP address: " LAN_TARGET
+            read -p "Enter target IP address: " LAN_TARGET
             if ! validate_ip "$LAN_TARGET"; then
                 echo "Invalid IP address format"
                 exit 1
@@ -73,9 +90,10 @@ case "$1" in
         stop_tunnel
         ;;
     *)
-        echo "Usage: $0 {on|off}"
-        echo "  on  - Start ThinLinc tunnel"
-        echo "  off - Stop ThinLinc tunnel"
+        echo "Usage: $0 {install|on|off}"
+        echo "  install - Install required dependencies"
+        echo "  on      - Start ThinLinc tunnel"
+        echo "  off     - Stop ThinLinc tunnel"
         exit 1
         ;;
 esac

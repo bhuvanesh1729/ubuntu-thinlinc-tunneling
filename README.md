@@ -1,10 +1,10 @@
 # Ubuntu ThinLinc Tunneling
 
-A smart SSH tunneling solution for ThinLinc remote desktop connections on Ubuntu systems. This tool automatically detects ThinLinc servers on your LAN and establishes a secure tunnel on port 2222.
+A smart SSH tunneling solution for ThinLinc remote desktop connections on Ubuntu systems. This tool automatically detects local IP addresses on your LAN and establishes a secure tunnel on port 2222.
 
 ## Features
 
-- Automatic LAN server detection
+- Automatic local IP address detection
 - Secure SSH tunneling
 - Port forwarding (22 → 2222)
 - Easy to use on/off commands
@@ -19,27 +19,44 @@ A smart SSH tunneling solution for ThinLinc remote desktop connections on Ubuntu
 
 ## Installation
 
-1. Clone this repository:
+### Quick Installation
+For quick installation and startup, use our one-liner deployment:
 ```bash
-git clone https://github.com/bhuvanesh1729/ubuntu-thinlinc-tunneling.git
-cd ubuntu-thinlinc-tunneling
+curl -O https://raw.githubusercontent.com/bhuvanesh1729/ubuntu-thinlinc-tunneling/main/tunnel.sh && chmod +x tunnel.sh && ./tunnel.sh install && ./tunnel.sh on
 ```
 
-2. Make the script executable:
+For more details, see [deployment.md](deployment.md).
+
+### Manual Installation
+1. Download the script:
+```bash
+curl -O https://raw.githubusercontent.com/bhuvanesh1729/ubuntu-thinlinc-tunneling/main/tunnel.sh
+```
+
+2. Make it executable:
 ```bash
 chmod +x tunnel.sh
 ```
 
-For quick deployment, see [deployment.md](deployment.md).
+3. Install dependencies:
+```bash
+./tunnel.sh install
+```
 
 ## Usage
+
+### Install Dependencies
+```bash
+./tunnel.sh install
+```
+This will install required packages (nmap and ssh).
 
 ### Start Tunnel
 ```bash
 ./tunnel.sh on
 ```
 This will:
-- Scan your LAN for ThinLinc servers
+- Scan your LAN for systems with SSH (port 22)
 - If found, automatically establish tunnel
 - If not found, prompt for manual IP input
 
