@@ -47,13 +47,24 @@ validate_ip() {
     fi
 }
 
+# Function to validate port number
+validate_port() {
+    if [[ $1 =~ ^[0-9]+$ ]] && [ "$1" -ge 1 ] && [ "$1" -le 65535 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Function to setup SSH tunnel
 setup_tunnel() {
     local target=$1
-    echo "Setting up SSH tunnel for $target:17 -> localhost:1717"
-    ssh -N -L 1717:$target:17 localhost &
+    local source_port=$2
+    local target_port=$3
+    echo "Setting up SSH tunnel for $target:$target_port -> localhost:$source_port"
+    ssh -N -L "$source_port:$target:$target_port" localhost &
     echo $! > /tmp/thinlinc-tunnel.pid
-    echo "Tunnel established. You can now connect to ThinLinc using localhost:1717"
+    echo "Tunnel established. You can now connect to ThinLinc using localhost:$source_port"
 }
 
 # Function to stop SSH tunnel
@@ -74,6 +85,21 @@ case "$1" in
         install_dependencies
         ;;
     "on")
+        # Get port numbers
+        read -p "Enter source port (default: 2222): " SOURCE_PORT
+        SOURCE_PORT=${SOURCE_PORT:-2222}
+        if ! validate_port "$SOURCE_PORT"; then
+            echo "Invalid source port number"
+            exit 1
+        fi
+
+        read -p "Enter target port (default: 22): " TARGET_PORT
+        TARGET_PORT=${TARGET_PORT:-22}
+        if ! validate_port "$TARGET_PORT"; then
+            echo "Invalid target port number"
+            exit 1
+        fi
+
         # Try to detect LAN target first
         if detect_lan_target; then
             LAN_TARGET=$FOUND_TARGET
@@ -85,7 +111,7 @@ case "$1" in
                 exit 1
             fi
         fi
-        setup_tunnel "$LAN_TARGET"
+        setup_tunnel "$LAN_TARGET" "$SOURCE_PORT" "$TARGET_PORT"
         ;;
     "off")
         stop_tunnel

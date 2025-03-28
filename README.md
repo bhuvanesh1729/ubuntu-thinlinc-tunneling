@@ -56,9 +56,14 @@ This will install required packages (nmap and ssh).
 ./tunnel.sh on
 ```
 This will:
-- Scan your LAN for systems with SSH (port 22)
-- If found, automatically establish tunnel
-- If not found, prompt for manual IP input
+1. Prompt for port configuration:
+   - Source port (default: 2222)
+   - Target port (default: 22)
+2. Scan your LAN for systems with SSH access
+3. If found, automatically establish tunnel
+4. If not found, prompt for manual IP input
+
+The tunnel will forward connections from `localhost:SOURCE_PORT` to `TARGET_IP:TARGET_PORT`.
 
 ### Stop Tunnel
 ```bash
@@ -68,7 +73,7 @@ This will:
 ### Connecting to ThinLinc
 After starting the tunnel:
 1. Open ThinLinc client
-2. Connect to `localhost:2222`
+2. Connect to `localhost:SOURCE_PORT` (default: 2222)
 
 ## How It Works
 
