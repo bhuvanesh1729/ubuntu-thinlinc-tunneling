@@ -62,9 +62,30 @@ setup_tunnel() {
     local source_port=$2
     local target_port=$3
     echo "Setting up SSH tunnel for $target:$target_port -> localhost:$source_port"
-    ssh -N -L "$source_port:$target:$target_port" localhost &
-    echo $! > /tmp/thinlinc-tunnel.pid
-    echo "Tunnel established. You can now connect to ThinLinc using localhost:$source_port"
+    # Try SSH tunnel with different configurations
+    echo "Attempting direct tunnel..."
+    ssh -f -o ConnectTimeout=5 -N -L "$source_port:$target:$target_port" "$target"
+    if [ $? -eq 0 ]; then
+        pid=$(pgrep -f "ssh.*$source_port:$target:$target_port")
+        echo $pid > /tmp/thinlinc-tunnel.pid
+        echo "Tunnel established (PID: $pid). You can now connect to ThinLinc using localhost:$source_port"
+        return 0
+    fi
+    
+    echo "First attempt failed, trying alternative configuration..."
+    ssh -f -o ConnectTimeout=5 -N -L "$source_port:localhost:$target_port" "$target"
+    if [ $? -eq 0 ]; then
+        pid=$(pgrep -f "ssh.*$source_port:localhost:$target_port")
+        echo $pid > /tmp/thinlinc-tunnel.pid
+        echo "Tunnel established (PID: $pid). You can now connect to ThinLinc using localhost:$source_port"
+        return 0
+    fi
+
+    echo "Failed to establish SSH tunnel. Please check:"
+    echo "1. SSH service is running on target"
+    echo "2. Target IP is correct"
+    echo "3. You have SSH access to the target"
+    exit 1
 }
 
 # Function to stop SSH tunnel
@@ -112,9 +133,6 @@ case "$1" in
             fi
         fi
         setup_tunnel "$LAN_TARGET" "$SOURCE_PORT" "$TARGET_PORT"
-        ;;
-    "off")
-        stop_tunnel
         ;;
     *)
         echo "Usage: $0 {install|on|off}"
