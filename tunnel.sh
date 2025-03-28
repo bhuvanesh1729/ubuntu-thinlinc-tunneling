@@ -25,14 +25,15 @@ detect_lan_target() {
     NETWORK=$(ip route | grep "$DEFAULT_INTERFACE" | grep -v default | awk '{print $1}' | head -n1)
     
     # Scan the network for systems with SSH (port 22)
-    echo "Scanning network for systems with SSH access..."
+    echo "Scanning network for systems with ThinLinc server access..."
     FOUND_TARGET=$(nmap -p22 --open "$NETWORK" -n --max-retries 1 | grep "Nmap scan" | head -n1 | awk '{print $5}')
     
     if [ -n "$FOUND_TARGET" ]; then
-        echo "Found system with SSH access at: $FOUND_TARGET"
+        echo "Found system with ThinLinc Server at: $FOUND_TARGET"
         return 0
     else
-        echo "No system with SSH access found automatically."
+        ip a
+        echo "No system with ThinLinc server found automatically."
         return 1
     fi
 }
