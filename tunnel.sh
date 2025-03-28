@@ -50,10 +50,10 @@ validate_ip() {
 # Function to setup SSH tunnel
 setup_tunnel() {
     local target=$1
-    echo "Setting up SSH tunnel for $target:22 -> localhost:2222"
-    ssh -N -L 2222:$target:22 localhost &
+    echo "Setting up SSH tunnel for $target:17 -> localhost:1717"
+    ssh -N -L 1717:$target:17 localhost &
     echo $! > /tmp/thinlinc-tunnel.pid
-    echo "Tunnel established. You can now connect to ThinLinc using localhost:2222"
+    echo "Tunnel established. You can now connect to ThinLinc using localhost:1717"
 }
 
 # Function to stop SSH tunnel
